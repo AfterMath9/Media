@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Media Player App</title>
+    <style>
+    /* CSS Variables for Light and Dark Mode */
+:root {
+  --primary-color: #6200EE;
+  --background-color: #FAFAFA;
+  --text-color: #333;
+  --card-background: #fff;
+}
+
+body.dark-mode {
+  --primary-color: #3700B3;
+  --background-color: #121212;
+  --text-color: #EEE;
+  --card-background: #1E1E1E;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+header#appHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--primary-color);
+  color: white;
+  padding: 15px 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+}
+
+header#appHeader h1 {
+  margin: 0;
+  font-size: 20px;
+}
+
+#themeToggleContainer {
+  display: flex;
+  align-items: center;
+}
+
+#themeToggleInput {
+  display: none;
+}
+
+#themeToggleIcon {
+  font-size: 24px;
+  cursor: pointer;
+}
+
+main {
+  padding: 80px 20px 80px 20px;
+}
+
+.view {
+  margin-bottom: 20px;
+}
+
+.video-player {
+  width: 100%;
+  max-height: 400px;
+  border-radius: 8px;
+  background: black;
+  margin-bottom: 20px;
+}
+
+/* Card styling */
+.card {
+  background: var(--card-background);
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Channel Cards */
+.channel-card h3 {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+}
+
+.channel-list {
+  display: flex;
+  overflow-x: auto;
+  gap: 10px;
+  padding-bottom: 10px;
+}
+
+.channel-button {
+  background: var(--primary-color);
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 100px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.channel-button img {
+  width: 50px;
+  height: 50px;
+  border-radius: 4px;
+  margin-bottom: 5px;
+}
+
+.channel-button:hover {
+  background: #3700B3;
+}
+
+/* Social Links in Settings */
+.social-links {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.social-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: var(--primary-color);
+  background: var(--card-background);
+  padding: 10px;
+  border-radius: 6px;
+  transition: background 0.3s;
+}
+
+.social-link:hover {
+  background: #f0f0f0;
+}
+
+.social-link .material-icons {
+  margin-right: 10px;
+}
+
+/* Bottom Navigation */
+nav#navbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: var(--primary-color);
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+  z-index: 1000;
+}
+
+.nav-button {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.nav-button.active {
+  font-weight: bold;
+  color: #FFEB3B;
+}
+
+.nav-button .material-icons {
+  font-size: 24px;
+  margin-bottom: 3px;
+}
+
+/* Button Styling */
+.btn, button {
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.primary-btn {
+  background: var(--primary-color);
+  color: white;
+  padding: 10px 20px;
+}
+
+.primary-btn:hover {
+  background: #3700B3;
+}
+
+    </style>
+</head>
+<body>
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Media Player App</title>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header id="appHeader">
+    <h1>Media Player App</h1>
+    <div id="themeToggleContainer">
+      <input type="checkbox" id="darkModeToggleInput">
+      <label for="darkModeToggleInput" id="darkModeToggleIcon" title="Toggle dark/light mode">🌙</label>
+    </div>
+  </header>
+  
+  <main>
+    <!-- Home / Player View -->
+    <div id="playerView" class="view">
+      <video id="videoPlayer" controls autoplay playsinline class="video-player"></video>
+      <div id="channelSections"></div>
+    </div>
+    
+    <!-- Settings View -->
+    <div id="settingsView" class="view" style="display:none;">
+      <h2>Settings</h2>
+      <div class="card">
+        <h3>About the Developer</h3>
+        <p>Created by amrmafalani</p>
+      </div>
+      <div class="card social-card">
+        <h3>Connect with me</h3>
+        <div class="social-links">
+          <a href="https://x.com/amrmafalani" target="_blank" class="social-link">
+            <span class="material-icons">public</span>
+            <span>X amrmafalani</span>
+          </a>
+          <a href="https://t.me/amr1sy" target="_blank" class="social-link">
+            <span class="material-icons">send</span>
+            <span>Telegram amr1sy</span>
+          </a>
+          <a href="https://github.com/aftermath9" target="_blank" class="social-link">
+            <span class="material-icons">code</span>
+            <span>Github aftermath9</span>
+          </a>
+          <a href="mailto:amrmafalani@yahoo.com" class="social-link">
+            <span class="material-icons">mail</span>
+            <span>Bug reports</span>
+          </a>
+        </div>
+      </div>
+      <div class="card">
+        <button id="buyCoffeeButton" class="btn primary-btn">Buy Me Coffee</button>
+      </div>
+    </div>
+  </main>
+  
+  <nav id="navbar">
+    <button id="playerNav" class="nav-button active">
+      <span class="material-icons">home</span>
+      <span class="nav-label">Home</span>
+    </button>
+    <button id="settingsNav" class="nav-button">
+      <span class="material-icons">settings</span>
+      <span class="nav-label">Settings</span>
+    </button>
+  </nav>
+  <script src="app.js"></script>
+</body>
+</html>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+    // Element references
+    const playerNav = document.getElementById('playerNav');
+    const settingsNav = document.getElementById('settingsNav');
+    const playerView = document.getElementById('playerView');
+    const settingsView = document.getElementById('settingsView');
+    const darkModeToggleInput = document.getElementById('darkModeToggleInput');
+    const darkModeToggleIcon = document.getElementById('darkModeToggleIcon');
+
+    // Initialize dark mode state
+    if (localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark-mode');
+        darkModeToggleInput.checked = true;
+        darkModeToggleIcon.textContent = '☀';
+    } else {
+        darkModeToggleInput.checked = false;
+        darkModeToggleIcon.textContent = '🌙';
+    }
+
+    darkModeToggleInput.addEventListener('change', function() {
+        if (this.checked) {
+            document.body.classList.add('dark-mode');
+            localStorage.setItem('darkMode', 'true');
+            darkModeToggleIcon.textContent = '☀';
+        } else {
+            document.body.classList.remove('dark-mode');
+            localStorage.setItem('darkMode', 'false');
+            darkModeToggleIcon.textContent = '🌙';
+        }
+    });
+
+    // Navigation handling with active state
+    playerNav.addEventListener('click', function() {
+        playerView.style.display = 'block';
+        settingsView.style.display = 'none';
+        playerNav.classList.add('active');
+        settingsNav.classList.remove('active');
+    });
+
+    settingsNav.addEventListener('click', function() {
+        playerView.style.display = 'none';
+        settingsView.style.display = 'block';
+        settingsNav.classList.add('active');
+        playerNav.classList.remove('active');
+    });
+
+    // Channels Data
+    const channelsData = {
+      "channels": [
+        {
+          "name": "beIN SPORTS HD1",
+          "url": "https://stream.sainaertebat.com/hls2/bein1.m3u8",
+          "logo": "bei.png",
+          "category": "بي ان سبورت"
+        },
+        {
+          "name": "beIN SPORTS HD2",
+          "url": "https://cdn1-europe.mgmlcdn.s-cloudflare.com:25463/xH5gc4mOg8vw4txxz36/240_.m3u8?",
+          "logo": "bei.png",
+          "category": "بي ان سبورت"
+        },
+        {
+          "name": "beIN SPORTS HD3",
+          "url": "https://cdn1-europe.mgmlcdn.s-cloudflare.com:25463/xH5gc4mOg8vw4txxz36/241_.m3u8?",
+          "logo": "bei.png",
+          "category": "بي ان سبورت"
+        },
+        {
+          "name": "beIN SPORTS HD4",
+          "url": "https://cdn1-europe.mgmlcdn.s-cloudflare.com:25463/xH5gc4mOg8vw4txxz36/1_.m3u8?",
+          "logo": "bei.png",
+          "category": "بي ان سبورت"
+        },
+        {
+          "name": "beIN SPORTS HD5",
+          "url": "https://cdn1-europe.mgmlcdn.s-cloudflare.com:25463/xH5gc4mOg8vw4txxz36/32_.m3u8?",
+          "logo": "bei.png",
+          "category": "بي ان سبورت"
+        },
+        {
+          "name": "SSC 1",
+          "url": "https://stream.sainaertebat.com/hls2/ssc1.m3u8",
+          "logo": "ssc.png",
+          "category": "SSC"
+        },
+        {
+          "name": "SSC 2",
+          "url": "https://cdn1-europe.mgmlcdn.s-cloudflare.com:25463/xH5gc4mOg8vw4txxz36/163_.m3u8?",
+          "logo": "ssc.png",
+          "category": "SSC"
+        },
+        {
+          "name": "SSC 3",
+          "url": "https://cdn1-europe.mgmlcdn.s-cloudflare.com:25463/xH5gc4mOg8vw4txxz36/147_.m3u8?",
+          "logo": "ssc.png",
+          "category": "SSC"
+        },
+        {
+          "name": "SSC 4",
+          "url": "https://cdn1-europe.mgmlcdn.s-cloudflare.com:25463/xH5gc4mOg8vw4txxz36/178_.m3u8?",
+          "logo": "ssc.png",
+          "category": "SSC"
+        },
+        {
+          "name": "SSC 5",
+          "url": "https://cdn1-europe.mgmlcdn.s-cloudflare.com:25463/xH5gc4mOg8vw4txxz36/179_.m3u8?",
+          "logo": "ssc.png",
+          "category": "SSC"
+        },
+        {
+          "name": "SSC Extra1",
+          "url": "https://cdn1-europe.mgmlcdn.s-cloudflare.com:25463/xH5gc4mOg8vw4txxz36/193_.m3u8?",
+          "logo": "ssc.png",
+          "category": "SSC"
+        },
+        {
+          "name": "SSC Extra2",
+          "url": "https://cdn1-europe.mgmlcdn.s-cloudflare.com:25463/xH5gc4mOg8vw4txxz36/226_.m3u8?",
+          "logo": "ssc.png",
+          "category": "SSC"
+        },
+        {
+          "name": "Cup 1",
+          "url": "https://cdn1-europe.mgmlcdn.s-cloudflare.com:25463/xH5gc4mOg8vw4txxz36/73_.m3u8?",
+          "logo": "2.png",
+          "category": "الكأس سبورت"
+        },
+        {
+          "name": "ON Sports",
+          "url": "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8",
+          "logo": "3.png",
+          "category": "أو أن سبورت"
+        }
+      ]
+    };
+
+    // Sort channels by category then by name
+    channelsData.channels.sort((a, b) => {
+      if (a.category === b.category) {
+        return a.name.localeCompare(b.name);
+      }
+      return a.category.localeCompare(b.category);
+    });
+
+    // Group channels by category
+    const categories = {};
+    channelsData.channels.forEach(channel => {
+      if (!categories[channel.category]) {
+        categories[channel.category] = [];
+      }
+      categories[channel.category].push(channel);
+    });
+
+    // Render channel sections as cards with horizontal scrolling channel buttons
+    const channelSectionsElem = document.getElementById('channelSections');
+    channelSectionsElem.innerHTML = '';
+    Object.keys(categories).forEach(category => {
+      const cardDiv = document.createElement('div');
+      cardDiv.className = 'card channel-card';
+
+      const header = document.createElement('h3');
+      let displayCategory = category;
+      switch(category) {
+         case 'بي ان سبورت':
+             displayCategory = 'beIN Sports';
+             break;
+         case 'الكأس سبورت':
+             displayCategory = 'Cup Sports';
+             break;
+         case 'أو أن سبورت':
+             displayCategory = 'ON Sports';
+             break;
+         default:
+             displayCategory = category;
+      }
+      header.textContent = displayCategory;
+      cardDiv.appendChild(header);
+
+      const scrollContainer = document.createElement('div');
+      scrollContainer.className = 'channel-list';
+
+      categories[category].forEach(channel => {
+        const channelButton = document.createElement('button');
+        channelButton.className = 'channel-button';
+        const img = document.createElement('img');
+        img.src = channel.logo;
+        img.alt = channel.name;
+        channelButton.appendChild(img);
+        const span = document.createElement('span');
+        span.textContent = channel.name;
+        channelButton.appendChild(span);
+
+        channelButton.addEventListener('click', () => {
+          const videoPlayer = document.getElementById('videoPlayer');
+          videoPlayer.src = channel.url;
+          videoPlayer.play();
+        });
+
+        scrollContainer.appendChild(channelButton);
+      });
+
+      cardDiv.appendChild(scrollContainer);
+      channelSectionsElem.appendChild(cardDiv);
+    });
+
+    // Automatically load the first channel if available
+    if (channelsData.channels.length > 0) {
+      document.getElementById('videoPlayer').src = channelsData.channels[0].url;
+    }
+
+    // Buy Me Coffee button event
+    document.getElementById('buyCoffeeButton').addEventListener('click', function() {
+      window.open('https://www.buymeacoffee.com/', '_blank');
+    });
+
+    // Prevent zooming on touch devices
+    document.addEventListener('touchmove', function(event) {
+      if (event.scale && event.scale !== 1) {
+        event.preventDefault();
+      }
+    }, { passive: false });
+
+    // Disable text selection
+    document.addEventListener('selectstart', function(e) {
+      e.preventDefault();
+    });
+});
+    </script>
+</body>
+</html>
